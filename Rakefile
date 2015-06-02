@@ -4,7 +4,7 @@ env = RPlusPlus::Environment.new
 
 CC = 'g++'
 
-LIBS = []
+LIBS = ['webkit2gtk-3.0']
 
 LIB_CFLAGS = LIBS.map { |lib|
                 %x[ pkg-config --cflags #{lib} ].gsub(/\n/,' ')

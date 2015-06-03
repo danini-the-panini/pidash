@@ -19,7 +19,7 @@ WARNING_FLAGS = [
   'overloaded-virtual', 'sign-promo'
 ].map { |flag| "-W#{flag}"}.join ' '
 FORMATTING_FLAGS = ['message-length=80', 'diagnostics-show-option'].map { |flag| "-f#{flag}"}.join ' '
-EXTRA_CFLAGS = "-std=c++11 -pipe -pedantic"
+EXTRA_CFLAGS = "-pipe -pedantic"
 CFLAGS = "#{WARNING_FLAGS} #{FORMATTING_FLAGS} #{LIB_CFLAGS} #{EXTRA_CFLAGS}"
 
 EXTRA_LDFLAGS = ""

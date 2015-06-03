@@ -3,7 +3,7 @@ PiDash
 
 An interactive dashboard for the Raspberry Pi.
 
-__NOTE__: Linux only, unless someone can test and provide instruction for Windows 10.
+__NOTE__: Linux only, unless someone wants to test and provide instruction for Windows 10.
 
 Idea
 ----
@@ -17,13 +17,15 @@ Dependencies
 -------------
 
 Runtime:
-* webkit2-3.0
+* GTK3+
+* webkit2gtk-3.0
 
 Development:
 * gcc
 * pkg-config
 * ruby
 * rake
+* rplusplus
 
 
 Building
@@ -31,7 +33,8 @@ Building
 
 Install dependencies (Ubuntu):
 
-    $ sudo apt-get install libwebkit2-3.0-dev
+    $ gem install rplusplus
+    $ sudo apt-get install libwebkit2gtk-3.0-dev
 
 Rake:
 
@@ -49,19 +52,21 @@ Use left/right arrow keys to change page, escape to quit
 TODO
 ----
 
+In no _particular_ order
 1. Make full screen
-2. Make list of URLs read from file
-3. Watch the URL file and update on-the-fly
-4. Support shell commands (e.g. `iftop`)
-5. Use the Leap Motion as input (swipe left/right)
-6. Run on startup
-7. Add more interesting gestures (swipe up/down) ?
+1. Make list of URLs read from file
+1. Watch the URL file and update on-the-fly
+1. Support shell commands (e.g. `iftop`)
+1. Use the Leap Motion as input (swipe left/right)
+1. Animate swiping
+1. Run on startup
+1. Add more interesting gestures (swipe up/down) ?
 
 Contributing
 ------------
 
 1. Fork it
-2. Branch it
-3. Code it
-4. Test it
-5. Pull Request it!
+1. Branch it
+1. Code it
+1. Test it
+1. Pull Request it!

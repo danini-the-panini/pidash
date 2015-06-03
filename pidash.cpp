@@ -3,6 +3,7 @@
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
 static gboolean closeWebViewCb(WebKitWebView* webView, GtkWidget* window);
+static gboolean keyPressCb(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 int main(int argc, char* argv[])
 {
@@ -22,7 +23,8 @@ int main(int argc, char* argv[])
   // Set up callbacks so that if either the main window or the browser instance is
   // closed, the program will exit
   g_signal_connect(main_window, "destroy", G_CALLBACK(destroyWindowCb), NULL);
-  g_signal_connect(webView, "close", G_CALLBACK(closeWebViewCb), main_window);
+  g_signal_connect(webView, "close", G_CALLBACK(closeWebViewCb), NULL);
+  g_signal_connect(webView, "key-press-event", G_CALLBACK(keyPressCb), main_window);
 
   // Load a web page into the browser instance
   webkit_web_view_load_uri(webView, "file:///home/daniel/pidash/index.html");
@@ -40,7 +42,6 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window)
 {
   gtk_main_quit();
@@ -50,4 +51,14 @@ static gboolean closeWebViewCb(WebKitWebView* webView, GtkWidget* window)
 {
   gtk_widget_destroy(window);
   return TRUE;
+}
+
+static gboolean keyPressCb(GtkWidget * widget, GdkEvent * event, gpointer data)
+{
+  GdkEventKey key = event->key;
+
+  if (key.keyval == GDK_KEY_Escape) {
+    gtk_main_quit();
+    return TRUE;
+  }
 }

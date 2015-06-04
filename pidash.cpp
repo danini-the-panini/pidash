@@ -14,6 +14,9 @@ static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
 static gboolean closeWebViewCb(WebKitWebView* web_view, GtkWidget* window);
 static gboolean keyPressCb(GtkWidget * widget, GdkEvent * event, gpointer data);
 
+static GtkWidget* load_url(const string& url);
+static GtkWidget* load_shell(const vector<string>& argv);
+
 static void next_page();
 static void previous_page();
 
@@ -24,8 +27,7 @@ int current_page_index = 0;
 gulong key_handler;
 GtkWidget *main_window;
 
-vector<string> urls;
-vector<WebKitWebView*> web_views;
+vector<GtkWidget*> page_views;
 
 int main(int argc, char* argv[])
 {
@@ -40,29 +42,21 @@ int main(int argc, char* argv[])
   for( string line; getline( input, line ); ) {
     vector<string> tokens = split(line, ' ');
     if(tokens[0].compare("url") == 0) {
-      urls.push_back(tokens[1]);
+      page_views.push_back(load_url(tokens[1]));
     }
   }
 
-  // Create a browser instance
-  for (int i = 0; i < urls.size(); i++) {
-    WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
-    // g_signal_connect(web_view, "close", G_CALLBACK(closeWebViewCb), NULL);
-    webkit_web_view_load_uri(web_view, urls[i].c_str());
-    web_views.push_back(web_view);
-  }
-
   // Put the browser area into the main window
-  gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(web_views[0]));
+  gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(page_views[0]));
 
   // Set up callbacks so that if either the main window or the browser instance is
   // closed, the program will exit
   g_signal_connect(main_window, "destroy", G_CALLBACK(destroyWindowCb), NULL);
-  key_handler = g_signal_connect(web_views[0], "key-press-event", G_CALLBACK(keyPressCb), main_window);
+  key_handler = g_signal_connect(page_views[0], "key-press-event", G_CALLBACK(keyPressCb), main_window);
 
   // Make sure that when the browser area becomes visible, it will get mouse
   // and keyboard events
-  gtk_widget_grab_focus(GTK_WIDGET(web_views[0]));
+  gtk_widget_grab_focus(GTK_WIDGET(page_views[0]));
 
   // Make sure the main window and all its contents are visible
   gtk_widget_show_all(main_window);
@@ -71,6 +65,19 @@ int main(int argc, char* argv[])
   gtk_main();
 
   return 0;
+}
+
+static GtkWidget* load_url(const string& url)
+{
+  WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
+  // g_signal_connect(web_view, "close", G_CALLBACK(closeWebViewCb), NULL);
+  webkit_web_view_load_uri(web_view, url.c_str());
+  return GTK_WIDGET(web_view);
+}
+
+static GtkWidget* load_shell(const vector<string>& argv)
+{
+  return NULL; //TODO
 }
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window)
@@ -106,7 +113,7 @@ static void next_page()
 {
   detach_current_page();
   current_page_index += 1;
-  if (current_page_index >= urls.size()) current_page_index = 0;
+  if (current_page_index >= page_views.size()) current_page_index = 0;
   attach_current_page();
 }
 
@@ -114,21 +121,21 @@ static void previous_page()
 {
   detach_current_page();
   current_page_index -= 1;
-  if (current_page_index < 0) current_page_index = urls.size() - 1;
+  if (current_page_index < 0) current_page_index = page_views.size() - 1;
   attach_current_page();
 }
 
 static void detach_current_page()
 {
-  g_signal_handler_disconnect(web_views[current_page_index], key_handler);
-  gtk_container_remove(GTK_CONTAINER(main_window), GTK_WIDGET(web_views[current_page_index]));
+  g_signal_handler_disconnect(page_views[current_page_index], key_handler);
+  gtk_container_remove(GTK_CONTAINER(main_window), page_views[current_page_index]);
 }
 
 static void attach_current_page()
 {
-  gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(web_views[current_page_index]));
-  key_handler = g_signal_connect(web_views[current_page_index], "key-press-event", G_CALLBACK(keyPressCb), main_window);
-  gtk_widget_grab_focus(GTK_WIDGET(web_views[current_page_index]));
+  gtk_container_add(GTK_CONTAINER(main_window), page_views[current_page_index]);
+  key_handler = g_signal_connect(page_views[current_page_index], "key-press-event", G_CALLBACK(keyPressCb), main_window);
+  gtk_widget_grab_focus(page_views[current_page_index]);
   gtk_widget_show_all(main_window);
 }
 

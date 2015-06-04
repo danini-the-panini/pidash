@@ -2,7 +2,7 @@ require 'rake/clean'
 require 'rplusplus'
 env = RPlusPlus::Environment.new
 
-CC = 'g++'
+CC = 'clang++'
 
 LIBS = ['webkitgtk-3.0']
 
@@ -19,10 +19,10 @@ WARNING_FLAGS = [
   'overloaded-virtual', 'sign-promo'
 ].map { |flag| "-W#{flag}"}.join ' '
 FORMATTING_FLAGS = ['message-length=80', 'diagnostics-show-option'].map { |flag| "-f#{flag}"}.join ' '
-EXTRA_CFLAGS = "-pipe -pedantic"
+EXTRA_CFLAGS = "-pipe -pedantic -g"
 CFLAGS = "#{WARNING_FLAGS} #{FORMATTING_FLAGS} #{LIB_CFLAGS} #{EXTRA_CFLAGS}"
 
-EXTRA_LDFLAGS = ""
+EXTRA_LDFLAGS = "-g"
 LDFLAGS = "#{LDLIBS} #{EXTRA_LDFLAGS}"
 
 CLOBBER.include(*env.objects.keys, *env.builds.keys, *env.erbs.keys)

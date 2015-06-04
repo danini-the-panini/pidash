@@ -1,6 +1,10 @@
-#include <stdio.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
+#include <string>
+#include <vector>
+#include <fstream>
+
+using namespace std;
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
 static gboolean closeWebViewCb(WebKitWebView* web_view, GtkWidget* window);
@@ -14,14 +18,10 @@ static void attach_current_page();
 
 int current_page_index = 0;
 gulong key_handler;
-const int NUM_URLS = 3;
-char *urls[] = {
-  "file:///home/daniel/pidash/page1.html",
-  "file:///home/daniel/pidash/page2.html",
-  "file:///home/daniel/pidash/page3.html"
-};
-WebKitWebView *web_views[NUM_URLS];
 GtkWidget *main_window;
+
+vector<string> urls;
+vector<WebKitWebView*> web_views;
 
 int main(int argc, char* argv[])
 {
@@ -32,11 +32,16 @@ int main(int argc, char* argv[])
   main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
 
+  urls.push_back("file:///home/daniel/projects/pidash/page1.html");
+  urls.push_back("file:///home/daniel/projects/pidash/page2.html");
+  urls.push_back("file:///home/daniel/projects/pidash/page3.html");
+
   // Create a browser instance
-  for (int i = 0; i < NUM_URLS; i++) {
-    web_views[i] = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
-    g_signal_connect(web_views[i], "close", G_CALLBACK(closeWebViewCb), NULL);
-    webkit_web_view_load_uri(web_views[i], urls[i]);
+  for (int i = 0; i < urls.size(); i++) {
+    WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
+    // g_signal_connect(web_view, "close", G_CALLBACK(closeWebViewCb), NULL);
+    webkit_web_view_load_uri(web_view, urls[i].c_str());
+    web_views.push_back(web_view);
   }
 
   // Put the browser area into the main window
@@ -86,13 +91,14 @@ static gboolean keyPressCb(GtkWidget * widget, GdkEvent * event, gpointer data)
       next_page(); break;
     default: break;
   }
+  return TRUE;
 }
 
 static void next_page()
 {
   detach_current_page();
   current_page_index += 1;
-  if (current_page_index >= NUM_URLS) current_page_index = 0;
+  if (current_page_index >= urls.size()) current_page_index = 0;
   attach_current_page();
 }
 
@@ -100,7 +106,7 @@ static void previous_page()
 {
   detach_current_page();
   current_page_index -= 1;
-  if (current_page_index < 0) current_page_index = NUM_URLS - 1;
+  if (current_page_index < 0) current_page_index = urls.size() - 1;
   attach_current_page();
 }
 

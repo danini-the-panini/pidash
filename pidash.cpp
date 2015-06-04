@@ -1,6 +1,8 @@
 #include <iostream>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
+#include <vte/vte.h>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -9,13 +11,14 @@
 using namespace std;
 
 static vector<string> split(const string &s, char delim);
+static char** to_argv(const vector<string>& args);
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
 static gboolean closeWebViewCb(WebKitWebView* web_view, GtkWidget* window);
 static gboolean keyPressCb(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 static GtkWidget* load_url(const string& url);
-static GtkWidget* load_shell(const vector<string>& argv);
+static GtkWidget* load_shell(const vector<string>& args);
 
 static void next_page();
 static void previous_page();
@@ -43,6 +46,9 @@ int main(int argc, char* argv[])
     vector<string> tokens = split(line, ' ');
     if(tokens[0].compare("url") == 0) {
       page_views.push_back(load_url(tokens[1]));
+    } else if (tokens[0].compare("shell") == 0) {
+      tokens.erase(tokens.begin());
+      page_views.push_back(load_shell(tokens));
     }
   }
 
@@ -69,15 +75,42 @@ int main(int argc, char* argv[])
 
 static GtkWidget* load_url(const string& url)
 {
+  cout << "Loading URL " << url << endl;
+
   WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
   // g_signal_connect(web_view, "close", G_CALLBACK(closeWebViewCb), NULL);
   webkit_web_view_load_uri(web_view, url.c_str());
   return GTK_WIDGET(web_view);
 }
 
-static GtkWidget* load_shell(const vector<string>& argv)
+static GtkWidget* load_shell(const vector<string>& args)
 {
-  return NULL; //TODO
+  cout << "Loading Shell Command:";
+  for (size_t i = 0; i < args.size(); i++) {
+    cout << " " << args[i];
+  }
+  cout << endl;
+
+  char** argv = to_argv(args);
+  GError* err = NULL; GPid pid;
+
+  VteTerminal* term_view = VTE_TERMINAL(g_object_ref(vte_terminal_new()));
+  vte_terminal_spawn_sync(term_view, VTE_PTY_DEFAULT, 0, argv, 0, (GSpawnFlags)(G_SPAWN_SEARCH_PATH), 0, 0, &pid, NULL, &err);
+  if (err) cout << "***** ERR: " << err->code << ", " << "MSG: " << err->message << endl;
+
+  delete [] argv;
+  return GTK_WIDGET(term_view);
+}
+
+static char** to_argv(const vector<string>& args)
+{
+  char ** argv = new char*[args.size() + 1];
+  for (int i = 0; i < args.size(); i++) {
+    argv[i] = new char[args[i].size() + 1];
+    strncpy(argv[i], args[i].c_str(), args[i].size() + 1);
+  }
+  argv[args.size()] = 0;
+  return argv;
 }
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window)

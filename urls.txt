@@ -1,0 +1,3 @@
+file:///home/daniel/projects/pidash/page1.html
+file:///home/daniel/projects/pidash/page2.html
+file:///home/daniel/projects/pidash/page3.html

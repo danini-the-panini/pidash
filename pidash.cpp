@@ -32,9 +32,10 @@ int main(int argc, char* argv[])
   main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
 
-  urls.push_back("file:///home/daniel/projects/pidash/page1.html");
-  urls.push_back("file:///home/daniel/projects/pidash/page2.html");
-  urls.push_back("file:///home/daniel/projects/pidash/page3.html");
+  ifstream input( "urls.txt" );
+  for( string line; getline( input, line ); ) {
+    urls.push_back(line);
+  }
 
   // Create a browser instance
   for (int i = 0; i < urls.size(); i++) {

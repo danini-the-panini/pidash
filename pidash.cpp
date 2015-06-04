@@ -1,10 +1,14 @@
+#include <iostream>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <string>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
+
+static vector<string> split(const string &s, char delim);
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
 static gboolean closeWebViewCb(WebKitWebView* web_view, GtkWidget* window);
@@ -32,9 +36,12 @@ int main(int argc, char* argv[])
   main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
 
-  ifstream input( "urls.txt" );
+  ifstream input( "pages.txt" );
   for( string line; getline( input, line ); ) {
-    urls.push_back(line);
+    vector<string> tokens = split(line, ' ');
+    if(tokens[0].compare("url") == 0) {
+      urls.push_back(tokens[1]);
+    }
   }
 
   // Create a browser instance
@@ -123,4 +130,11 @@ static void attach_current_page()
   key_handler = g_signal_connect(web_views[current_page_index], "key-press-event", G_CALLBACK(keyPressCb), main_window);
   gtk_widget_grab_focus(GTK_WIDGET(web_views[current_page_index]));
   gtk_widget_show_all(main_window);
+}
+
+static vector<string> split(const string &s, char delim)
+{
+  vector<string> elems; stringstream ss(s); string item;
+  while (getline(ss, item, delim)) elems.push_back(item);
+  return elems;
 }

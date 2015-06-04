@@ -1,4 +1,9 @@
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <iostream>
+#include <ios>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <vte/vte.h>
@@ -12,12 +17,14 @@ using namespace std;
 
 static vector<string> split(const string &s, char delim);
 static char** to_argv(const vector<string>& args);
+static long get_file_size(const string &filename);
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
 static gboolean closeWebViewCb(WebKitWebView* web_view, GtkWidget* window);
 static gboolean keyPressCb(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 static GtkWidget* load_url(const string& url);
+static GtkWidget* load_file(const string& path);
 static GtkWidget* load_shell(const vector<string>& args);
 
 static void next_page();
@@ -46,6 +53,8 @@ int main(int argc, char* argv[])
     vector<string> tokens = split(line, ' ');
     if(tokens[0].compare("url") == 0) {
       page_views.push_back(load_url(tokens[1]));
+    } else if (tokens[0].compare("file") == 0) {
+      page_views.push_back(load_file(tokens[1]));
     } else if (tokens[0].compare("shell") == 0) {
       tokens.erase(tokens.begin());
       page_views.push_back(load_shell(tokens));
@@ -78,8 +87,23 @@ static GtkWidget* load_url(const string& url)
   cout << "Loading URL " << url << endl;
 
   WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
-  // g_signal_connect(web_view, "close", G_CALLBACK(closeWebViewCb), NULL);
   webkit_web_view_load_uri(web_view, url.c_str());
+  return GTK_WIDGET(web_view);
+}
+
+static GtkWidget* load_file(const string& path)
+{
+  cout << "Loading FILE " << path << endl;
+
+  long size = get_file_size(path);
+  char *buffer = new char[size + 1];
+  ifstream t(path.c_str());
+  t.read(buffer, size);
+  buffer[size] = 0;
+  t.close();
+
+  WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
+  webkit_web_view_load_string(web_view, buffer, NULL, NULL, NULL);
   return GTK_WIDGET(web_view);
 }
 
@@ -111,6 +135,13 @@ static char** to_argv(const vector<string>& args)
   }
   argv[args.size()] = 0;
   return argv;
+}
+
+static long get_file_size(const string &filename)
+{
+  struct stat stat_buf;
+  int rc = stat(filename.c_str(), &stat_buf);
+  return rc == 0 ? stat_buf.st_size : -1;
 }
 
 static void destroyWindowCb(GtkWidget* widget, GtkWidget* window)

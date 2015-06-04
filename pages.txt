@@ -1,5 +1,4 @@
-url file:///home/daniel/projects/pidash/page1.html
-url file:///home/daniel/projects/pidash/page2.html
-url file:///home/daniel/projects/pidash/page3.html
+url http://www.google.com/
+file ./page.html
 shell top
 shell iftop

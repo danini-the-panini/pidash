@@ -19,7 +19,7 @@ Dependencies
 Runtime:
 * GTK3+
 * webkitgtk-3.0
-* vte-2.91
+* vte-2.90
 
 Development:
 * gcc
@@ -35,7 +35,7 @@ Building
 Install dependencies (Ubuntu):
 
     $ gem install rplusplus
-    $ sudo apt-get install libwebkitgtk-3.0-dev libvte-2.91-dev
+    $ sudo apt-get install libwebkitgtk-3.0-dev libvte-2.90-dev
 
 Rake:
 

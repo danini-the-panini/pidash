@@ -156,7 +156,7 @@ static GtkWidget* load_shell(const vector<string>& args)
   GError* err = NULL; GPid pid;
 
   VteTerminal* term_view = VTE_TERMINAL(g_object_ref(vte_terminal_new()));
-  vte_terminal_spawn_sync(term_view, VTE_PTY_DEFAULT, 0, argv, 0, (GSpawnFlags)(G_SPAWN_SEARCH_PATH), 0, 0, &pid, NULL, &err);
+  vte_terminal_fork_command_full(term_view, VTE_PTY_DEFAULT, 0, argv, 0, (GSpawnFlags)(G_SPAWN_SEARCH_PATH), 0, 0, &pid, &err);
   if (err) cout << "***** ERR: " << err->code << ", " << "MSG: " << err->message << endl;
 
   delete [] argv;

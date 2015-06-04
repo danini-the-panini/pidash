@@ -2,9 +2,9 @@ require 'rake/clean'
 require 'rplusplus'
 env = RPlusPlus::Environment.new
 
-CC = 'clang++'
+CC = 'g++'
 
-LIBS = ['webkitgtk-3.0', 'vte-2.91']
+LIBS = ['webkitgtk-3.0', 'vte-2.90']
 
 LIB_CFLAGS = LIBS.map { |lib|
                 %x[ pkg-config --cflags #{lib} ].gsub(/\n/,' ')

@@ -71,6 +71,7 @@ static void get_screen_size()
   screen_width = gdk_screen_get_width(screen);
   screen_height = gdk_screen_get_height(screen);
 }
+
 static void create_window()
 {
   main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -79,6 +80,7 @@ static void create_window()
   g_signal_connect(main_window, "destroy", G_CALLBACK(destroyWindowCb), NULL);
   key_handler = g_signal_connect(main_window, "key-press-event", G_CALLBACK(keyPressCb), main_window);
 }
+
 static void load_setup_file()
 {
   ifstream input( "pages.txt" );

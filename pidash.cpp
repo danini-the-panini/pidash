@@ -33,62 +33,97 @@ static void previous_page();
 static void detach_current_page();
 static void attach_current_page();
 
+static WebKitWebView* create_web_view();
+static GtkWidget* wrap_in_scroll(GtkWidget* widget);
+static void add_widget(GtkWidget* widget);
+
+static void get_screen_size();
+static void create_window();
+static void load_setup_file();
+
 int current_page_index = 0;
 gulong key_handler;
 GtkWidget *main_window;
+
+int screen_width;
+int screen_height;
 
 vector<GtkWidget*> page_views;
 
 int main(int argc, char* argv[])
 {
-  // Initialize GTK+
   gtk_init(&argc, &argv);
 
-  // Create an 800x600 window that will contain the browser instance
-  main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
+  get_screen_size();
+  create_window();
+  load_setup_file();
 
+  attach_current_page();
+
+  gtk_main();
+
+  return 0;
+}
+
+static void get_screen_size()
+{
+  GdkScreen* screen = gdk_screen_get_default();
+  screen_width = gdk_screen_get_width(screen);
+  screen_height = gdk_screen_get_height(screen);
+}
+static void create_window()
+{
+  main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_default_size(GTK_WINDOW(main_window), screen_width, screen_height);
+  gtk_window_fullscreen(GTK_WINDOW(main_window));
+  g_signal_connect(main_window, "destroy", G_CALLBACK(destroyWindowCb), NULL);
+  key_handler = g_signal_connect(main_window, "key-press-event", G_CALLBACK(keyPressCb), main_window);
+}
+static void load_setup_file()
+{
   ifstream input( "pages.txt" );
   for( string line; getline( input, line ); ) {
     vector<string> tokens = split(line, ' ');
     if(tokens[0].compare("url") == 0) {
-      page_views.push_back(load_url(tokens[1]));
+      add_widget(load_url(tokens[1]));
     } else if (tokens[0].compare("file") == 0) {
-      page_views.push_back(load_file(tokens[1]));
+      add_widget(load_file(tokens[1]));
     } else if (tokens[0].compare("shell") == 0) {
       tokens.erase(tokens.begin());
-      page_views.push_back(load_shell(tokens));
+      add_widget(load_shell(tokens));
     }
   }
+}
 
-  // Put the browser area into the main window
-  gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(page_views[0]));
+static void add_widget(GtkWidget* widget)
+{
+  gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+  gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
+  page_views.push_back(GTK_WIDGET(g_object_ref(widget)));
+}
 
-  // Set up callbacks so that if either the main window or the browser instance is
-  // closed, the program will exit
-  g_signal_connect(main_window, "destroy", G_CALLBACK(destroyWindowCb), NULL);
-  key_handler = g_signal_connect(page_views[0], "key-press-event", G_CALLBACK(keyPressCb), main_window);
+static GtkWidget* wrap_in_scroll(GtkWidget* widget)
+{
+  GtkWidget* scroll_widget = gtk_scrolled_window_new(NULL, NULL);
+  gtk_container_add(GTK_CONTAINER(scroll_widget), widget);
+  return scroll_widget;
+}
 
-  // Make sure that when the browser area becomes visible, it will get mouse
-  // and keyboard events
-  gtk_widget_grab_focus(GTK_WIDGET(page_views[0]));
+static WebKitWebView* create_web_view()
+{
+  WebKitWebView* web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
+  WebKitWebWindowFeatures *features = webkit_web_view_get_window_features(web_view);
 
-  // Make sure the main window and all its contents are visible
-  gtk_widget_show_all(main_window);
-
-  // Run the main GTK+ event loop
-  gtk_main();
-
-  return 0;
+  return web_view;
 }
 
 static GtkWidget* load_url(const string& url)
 {
   cout << "Loading URL " << url << endl;
 
-  WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
+  WebKitWebView* web_view = create_web_view();
   webkit_web_view_load_uri(web_view, url.c_str());
-  return GTK_WIDGET(web_view);
+  return wrap_in_scroll(GTK_WIDGET(web_view));
 }
 
 static GtkWidget* load_file(const string& path)
@@ -102,9 +137,9 @@ static GtkWidget* load_file(const string& path)
   buffer[size] = 0;
   t.close();
 
-  WebKitWebView* web_view = WEBKIT_WEB_VIEW(g_object_ref(webkit_web_view_new()));
+  WebKitWebView* web_view = create_web_view();
   webkit_web_view_load_string(web_view, buffer, NULL, NULL, NULL);
-  return GTK_WIDGET(web_view);
+  return wrap_in_scroll(GTK_WIDGET(web_view));
 }
 
 static GtkWidget* load_shell(const vector<string>& args)
@@ -191,15 +226,15 @@ static void previous_page()
 
 static void detach_current_page()
 {
-  g_signal_handler_disconnect(page_views[current_page_index], key_handler);
-  gtk_container_remove(GTK_CONTAINER(main_window), page_views[current_page_index]);
+  GtkWidget* current_page_view = page_views[current_page_index];
+  g_signal_handler_disconnect(current_page_view, key_handler);
+  gtk_container_remove(GTK_CONTAINER(main_window), current_page_view);
 }
 
 static void attach_current_page()
 {
-  gtk_container_add(GTK_CONTAINER(main_window), page_views[current_page_index]);
-  key_handler = g_signal_connect(page_views[current_page_index], "key-press-event", G_CALLBACK(keyPressCb), main_window);
-  gtk_widget_grab_focus(page_views[current_page_index]);
+  GtkWidget* current_page_view = page_views[current_page_index];
+  gtk_container_add(GTK_CONTAINER(main_window), current_page_view);
   gtk_widget_show_all(main_window);
 }
 

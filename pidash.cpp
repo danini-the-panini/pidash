@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <glib.h>
 
 #include <iostream>
 #include <ios>
@@ -16,6 +17,7 @@
 using namespace std;
 
 static vector<string> split(const string &s, char delim);
+static string join(const vector<string> &strings, const string &delim);
 static char** to_argv(const vector<string>& args);
 static long get_file_size(const string &filename);
 
@@ -165,12 +167,10 @@ static GtkWidget* load_shell(const vector<string>& args)
 
 static char** to_argv(const vector<string>& args)
 {
-  char ** argv = new char*[args.size() + 1];
-  for (int i = 0; i < args.size(); i++) {
-    argv[i] = new char[args[i].size() + 1];
-    strncpy(argv[i], args[i].c_str(), args[i].size() + 1);
-  }
-  argv[args.size()] = 0;
+  string arg_string = join(args, " ");
+  char ** argv; int argc; GError *err = NULL;
+  g_shell_parse_argv(arg_string.c_str(), &argc, &argv, &err);
+  if (err) cout << "***** ERR: " << err->code << ", " << "MSG: " << err->message << endl;
   return argv;
 }
 
@@ -245,4 +245,16 @@ static vector<string> split(const string &s, char delim)
   vector<string> elems; stringstream ss(s); string item;
   while (getline(ss, item, delim)) elems.push_back(item);
   return elems;
+}
+
+static string join(const vector<string> &strings, const string &delim)
+{
+  if (strings.size() <= 1) return strings[0];
+  stringstream ss;
+  for (int i = 0; i < strings.size() - 1; i++) {
+    ss << strings[i];
+    ss << delim;
+  }
+  ss << strings[strings.size() - 1];
+  return ss.str();
 }

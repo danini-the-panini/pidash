@@ -1,2 +1,5 @@
 *.o
 pidash
+*.swp
+*.log
+tmp/

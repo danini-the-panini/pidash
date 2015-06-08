@@ -57,19 +57,19 @@ TODO
 ----
 
 In no _particular_ order
-1. Figure out the best way to interact with it
-1. Animate swiping
-1. Run on startup
-1. Add more interactions?
+ 1. Figure out the best way to interact with it
+ 1. Animate swiping
+ 1. Run on startup
+ 1. Add more interactions?
 
 Contributing
 ------------
 
 (To the tune of Daft Punk's Technologic)
-1. Fork it
-1. Branch it
-1. Code it
-1. Test it
-1. (something)
-1. (something)
-1. Pull Request it!
+ 1. Fork it
+ 1. Branch it
+ 1. Code it
+ 1. Test it
+ 1. (something)
+ 1. (something)
+ 1. Pull Request it!

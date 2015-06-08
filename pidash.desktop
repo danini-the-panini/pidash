@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=PiDash
+Type=Application
+Comment=Semi-interactive Dashboard for the Pi
+Exec=<pidash_home>/pidash-run
+Terminal=true
+Icon=
+Path=<pidash_home>
+StartupNotify=false
+Hidden=false

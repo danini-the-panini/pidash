@@ -1,0 +1,18 @@
+#!/bin/bash
+sleep 5
+SOURCE_DIR=$(dirname "$BASH_SOURCE")
+echo "Working Dir: $SOURCE_DIR"
+PIDASH="$SOURCE_DIR/pidash"
+PIDASH_PAGES="$SOURCE_DIR/pages.txt"
+PIDASH_LOG="$SOURCE_DIR/pidash.log"
+PIDASH_ERROR="$SOURCE_DIR/pidash-error.log"
+while true; do
+  echo "Starting $PIDASH"
+  $PIDASH 1> $PIDASH_LOG 2> $PIDASH_ERROR &
+  PID=$!
+  echo "Got PID $PID"
+  echo "Waiting for changes to $PIDASH_PAGES"
+  /usr/bin/inotifywait $PIDASH_PAGES -e modify
+  echo "Killing pidash..."
+  /bin/kill $PID
+done

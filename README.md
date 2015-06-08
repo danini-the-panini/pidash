@@ -44,7 +44,7 @@ Rake:
 
 Run:
 
-    $ ./pidash-run.sh
+    $ ./pidash-run
 
 Usage
 -----

@@ -51,3 +51,10 @@ env.builds.each do |target, objects|
     sh "#{CC} #{objects.join(' ')} -o #{target} #{LDFLAGS}"
   end
 end
+
+task :install => [:all] do |variable|
+  sh 'sudo cp pidash /usr/local/bin/pidash'
+  sh 'sudo cp pidash-run /usr/local/bin/pidash-run'
+  config_file = File.join Dir.home, '.pidash-pages'
+  sh "cp pages.txt #{config_file}" unless File.file? config_file
+end

@@ -1,5 +1,5 @@
 url http://www.google.com/
-file ./page.html
+file /home/pi/pidash/page.html
 shell top
 shell ssh pi@10.0.12.210 -t "sudo iftop"
-shell telnet towel.blinkenlights.nl 
+shell telnet towel.blinkenlights.nl

@@ -41,7 +41,7 @@ static void add_widget(GtkWidget* widget);
 
 static void get_screen_size();
 static void create_window();
-static void load_setup_file();
+static void load_setup_file(const string& path);
 
 int current_page_index = 0;
 gulong key_handler;
@@ -58,7 +58,11 @@ int main(int argc, char* argv[])
 
   get_screen_size();
   create_window();
-  load_setup_file();
+  if (argc > 1) {
+    load_setup_file(argv[1]);
+  } else {
+    load_setup_file("./pages.txt");
+  }
 
   attach_current_page();
 
@@ -83,9 +87,9 @@ static void create_window()
   key_handler = g_signal_connect(main_window, "key-press-event", G_CALLBACK(keyPressCb), main_window);
 }
 
-static void load_setup_file()
+static void load_setup_file(const string &path)
 {
-  ifstream input( "pages.txt" );
+  ifstream input(path.c_str());
   for( string line; getline( input, line ); ) {
     vector<string> tokens = split(line, ' ');
     if(tokens[0].compare("url") == 0) {
